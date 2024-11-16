@@ -1,7 +1,9 @@
-from enum import Enum
-import aiohttp
-import sqlite3
 import asyncio
+import csv
+import sqlite3
+from enum import Enum
+
+import aiohttp
 
 
 class Employers(Enum):
@@ -17,7 +19,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.101.76 Safari/537.36",
 }
 
-pages = 20
+pages = 20 # not more
 
 
 async def fetch_vacancies(session, employer, page):
@@ -45,6 +47,13 @@ async def main():
                 items = await fetch_vacancies(session, employer, i)
                 results.extend(items)
 
+        # write to csv
+        with open("hh.csv", "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["employer", "vacancy", "published_at"])
+            writer.writerows(results)
+
+        # write to db
         with sqlite3.connect("hh.db") as con:
             cur = con.cursor()
 
